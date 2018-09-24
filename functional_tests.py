@@ -12,6 +12,13 @@ class NewVisitorTest(unittest.TestCase):
 	def tearDown(self):
 		self.browser.quit()
 
+	def check_for_row_in_list_table(self, row_text, message=None):
+		table = self.browser.find_element_by_id('id_list_table')
+		rows = table.find_elements_by_tag_name('tr')
+		self.assertIn(row_text, [row.text for row in rows], 
+			(message or 'Item não encontrado na tabela') 
+			+ f' conteúdo:\n {table.text}')
+
 	def test_can_start_a_list_and_retrieve_later(self):
 		# Edith has heard about a cool new online to-do app. She goes
 		# to check out its homepage
@@ -35,10 +42,7 @@ class NewVisitorTest(unittest.TestCase):
 		inputbox.send_keys(Keys.ENTER)
 		time.sleep(1)
 		
-		table = self.browser.find_element_by_id('id_list_table')
-		rows = table.find_elements_by_tag_name('tr')
-		self.assertIn('1: Comprar penas de pavões',[row.text for row in rows],
-						f'Novo item da lista não apareceu na tabela, conteúdo:\n {table.text}')
+		self.check_for_row_in_list_table('1: Comprar penas de pavões')
 
 		# There is still a text box inviting her to add another item. She
 		# enters "Use peacock feathers to make a fly" (Edith is very methodical)
@@ -48,12 +52,10 @@ class NewVisitorTest(unittest.TestCase):
 		time.sleep(1)
 		
 		# The page updates again, and now shows both items on her list
-		table = self.browser.find_element_by_id('id_list_table')
-		rows = table.find_elements_by_tag_name('tr')
-		self.assertIn('1: Comprar penas de pavões',[row.text for row in rows],
-						f'Item antigo da lista não apareceu na tabela, conteúdo:\n {table.text}')
-		self.assertIn('2: Usar penas de pavão para levantar vôo',[row.text for row in rows],
-						f'Novo item da lista não apareceu na tabela, conteúdo:\n {table.text}')						
+		self.check_for_row_in_list_table('1: Comprar penas de pavões',
+			'Item antigo da lista não apareceu na tabela')
+			
+		self.check_for_row_in_list_table('2: Usar penas de pavão para levantar vôo')						
 
 		# Edith wonders whether the site will remember her list. Then she sees
 		# that the site has generated a unique URL for her -- there is some
