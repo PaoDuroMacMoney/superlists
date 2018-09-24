@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import unittest
+import time
 
 class NewVisitorTest(unittest.TestCase):
 
@@ -32,21 +33,32 @@ class NewVisitorTest(unittest.TestCase):
 		# When she hits enter, the page updates, and now the page lists
 		# "1: Buy peacock feathers" as an item in a to-do list
 		inputbox.send_keys(Keys.ENTER)
+		time.sleep(1)
 		
 		table = self.browser.find_element_by_id('id_list_table')
 		rows = table.find_elements_by_tag_name('tr')
-		self.assertTrue(any(row.text == '1: Comprar penas de pavões' for row in rows),
-						"Novo item da lista não apareceu na tabela")
+		self.assertIn('1: Comprar penas de pavões',[row.text for row in rows],
+						f'Novo item da lista não apareceu na tabela, conteúdo:\n {table.text}')
 
 		# There is still a text box inviting her to add another item. She
 		# enters "Use peacock feathers to make a fly" (Edith is very methodical)
-		self.fail('Finish the test!')
+		inputbox = self.browser.find_element_by_id('id_new_item')
+		inputbox.send_keys('Usar penas de pavão para levantar vôo')
+		inputbox.send_keys(Keys.ENTER)
+		time.sleep(1)
 		
 		# The page updates again, and now shows both items on her list
+		table = self.browser.find_element_by_id('id_list_table')
+		rows = table.find_elements_by_tag_name('tr')
+		self.assertIn('1: Comprar penas de pavões',[row.text for row in rows],
+						f'Item antigo da lista não apareceu na tabela, conteúdo:\n {table.text}')
+		self.assertIn('2: Usar penas de pavão para levantar vôo',[row.text for row in rows],
+						f'Novo item da lista não apareceu na tabela, conteúdo:\n {table.text}')						
 
 		# Edith wonders whether the site will remember her list. Then she sees
 		# that the site has generated a unique URL for her -- there is some
 		# explanatory text to that effect.
+		self.fail('FIM')
 
 		# She visits that URL - her to-do list is still there.
 

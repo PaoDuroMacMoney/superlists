@@ -5,9 +5,11 @@
 	<body>
 		<h1>Sua Lista de Tarefas</h1>
 		<form method="POST">
-			<input id="id_new_item" placeholder="Insira uma nova tarefa" />
+			<input id="id_new_item" name="item_text" placeholder="Insira uma nova tarefa" />
+			{% csrf_token %}
 		</form>
 		<table id="id_list_table">
+			<tr><td>1: {{ new_item_text }}</td></tr>
 		</table>
 	</body>	
 </html>

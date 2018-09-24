@@ -13,8 +13,12 @@ class HomePageTest(TestCase):
 		self.assertEqual(found.func, home_page)
 
 		
-	def test_home_page_returns_valid_html(self):
-		request = HttpRequest()
-		response = home_page(request)
-		expected_html = render_to_string('home.html')
-		self.assertEqual(response.content.decode(), expected_html)
+	def test_uses_home_template(self):
+		response = self.client.get('/')
+		self.assertTemplateUsed(response, 'home.html')
+	
+	
+	def test_can_save_a_POST_request(self):
+		response = self.client.post('/', data={'item_text': 'Uma nova tarefa'})
+		self.assertIn('Uma nova tarefa', response.content.decode())
+		self.assertTemplateUsed(response, 'home.html')
