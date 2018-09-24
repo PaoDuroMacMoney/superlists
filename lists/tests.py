@@ -6,41 +6,60 @@ from django.template.loader import render_to_string
 from lists.views import home_page
 from lists.models import Item
 
-class HomePageTest(TestCase):	
 
+class HomePageTest(TestCase):
 
-	def test_defaul_returns_home_page(self):
-		found = resolve('/')
-		self.assertEqual(found.func, home_page)
+    def test_defaul_returns_home_page(self):
+        found = resolve('/')
+        self.assertEqual(found.func, home_page)
 
-		
-	def test_uses_home_template(self):
-		response = self.client.get('/')
-		self.assertTemplateUsed(response, 'home.html')
-	
-	
-	def test_can_save_a_POST_request(self):
-		response = self.client.post('/', data={'item_text': 'Uma nova tarefa'})
-		self.assertIn('Uma nova tarefa', response.content.decode())
-		self.assertTemplateUsed(response, 'home.html')
+    def test_uses_home_template(self):
+        response = self.client.get('/')
+        self.assertTemplateUsed(response, 'home.html')
+
+    def test_can_save_a_POST_request(self):
+        self.client.post('/', data={'item_text': 'Uma nova tarefa'})
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'Uma nova tarefa')
+
+    def test_redirects_after_POST(self):
+        response = self.client.post('/', data={'item_text': 'Uma nova tarefa'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+
+    def test_only_saves_items_when_necessary(self):
+            self.client.get('/')
+            self.assertEqual(Item.objects.count(), 0)
+    
+    def test_display_all_list_items(self):
+        Item.objects.create(text='tarefa numero 1')
+        Item.objects.create(text='tarefa numero 2')
+
+        response = self.client.get('/')
+
+        self.assertIn('tarefa numero 1', response.content.decode())
+        self.assertIn('tarefa numero 2', response.content.decode())
+    
 
 
 class ItemModelTest(TestCase):
 
+    def test_saving_and_retrieving_items(self):
+        first_item = Item()
+        first_item.text = 'The first (ever) list item'
+        first_item.save()
 
-	def test_saving_and_retrieving_items(self):
-		first_item = Item()
-		first_item.text = 'The first (ever) list item'
-		first_item.save()
+        second_item = Item()
+        second_item.text = 'Item the second'
+        second_item.save()
 
-		second_item = Item()
-		second_item.text = 'Item the second'
-		second_item.save()
+        saved_items = Item.objects.all()
+        self.assertEqual(saved_items.count(), 2)
 
-		saved_items = Item.objects.all()
-		self.assertEqual(saved_items.count(), 2)
+        first_saved_item, second_saved_item = saved_items
 
-		first_saved_item, second_saved_item = saved_items
-
-		self.assertEqual(first_saved_item.text, first_item.text)
-		self.assertEqual(second_saved_item.text, second_item.text)
+        self.assertEqual(first_saved_item.text, first_item.text)
+        self.assertEqual(second_saved_item.text, second_item.text)
