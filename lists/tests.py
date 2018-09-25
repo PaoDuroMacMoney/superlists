@@ -6,12 +6,22 @@ from django.template.loader import render_to_string
 from lists.views import home_page
 from lists.models import Item
 
+class ListViewTest(TestCase):
+    def test_uses_list_template(self):
+        response = self.client.get('/lists/unica/')
+        self.assertTemplateUsed(response, 'list.html')
+
+    def test_displays_all_items(self):
+        Item.objects.create(text='Item 1')
+        Item.objects.create(text='Item 2')
+
+        response = self.client.get('/lists/unica/')
+
+        self.assertContains(response, 'Item 1')
+        self.assertContains(response, 'Item 2')
+
 
 class HomePageTest(TestCase):
-
-    def test_defaul_returns_home_page(self):
-        found = resolve('/')
-        self.assertEqual(found.func, home_page)
 
     def test_uses_home_template(self):
         response = self.client.get('/')
@@ -28,22 +38,12 @@ class HomePageTest(TestCase):
         response = self.client.post('/', data={'item_text': 'Uma nova tarefa'})
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        self.assertEqual(response['location'], '/lists/unica/')
 
     def test_only_saves_items_when_necessary(self):
             self.client.get('/')
             self.assertEqual(Item.objects.count(), 0)
     
-    def test_display_all_list_items(self):
-        Item.objects.create(text='tarefa numero 1')
-        Item.objects.create(text='tarefa numero 2')
-
-        response = self.client.get('/')
-
-        self.assertIn('tarefa numero 1', response.content.decode())
-        self.assertIn('tarefa numero 2', response.content.decode())
-    
-
 
 class ItemModelTest(TestCase):
 
