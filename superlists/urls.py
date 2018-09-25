@@ -19,6 +19,7 @@ from lists import views
 
 urlpatterns = [
     #path('admin/', admin.site.urls),
+    path('lists/new', views.new_list, name='new_list'),
 	path('', views.home_page, name='home'),
     path('lists/unica/', views.view_list, name='view_list'),
 ]
